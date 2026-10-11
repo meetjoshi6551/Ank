@@ -1,0 +1,11 @@
+{
+  "name": "my-expense-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Expense, income, Sabji Mandi, Kirana and udhar tracker in INR",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

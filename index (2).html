@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#00695c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>My Expense Manager</title>
+<style>
+:root{
+  --pri:#00695c;--on-pri:#fff;--pri-c:#b2dfd6;--on-pri-c:#00201b;
+  --bg:#f5f8f6;--surf:#fff;--surf2:#e9f0ed;--ink:#17201d;--mut:#5c6b66;--line:#d5dfdb;
+  --pos:#1b7f3b;--neg:#b3261e;--warn:#9a6700;--shadow:0 1px 3px rgba(0,0,0,.12);
+  --c1:#00796b;--c2:#e8710a;--c3:#5e35b1;--c4:#c2185b;--c5:#1565c0;--c6:#6d4c41;--c7:#7cb342;--c8:#546e7a;
+}
+@media (prefers-color-scheme:dark){
+  :root{--pri:#7fd6c6;--on-pri:#00201b;--pri-c:#1f4d45;--on-pri-c:#c5f2e9;
+  --bg:#0f1513;--surf:#18201d;--surf2:#222c28;--ink:#e3eae7;--mut:#9aaaa4;--line:#33403b;
+  --pos:#6fd08a;--neg:#ffb4ab;--warn:#e6c35c;--shadow:none}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;background:var(--bg);position:relative;overflow:hidden}
+body.frame{background:#cfd8d4;display:flex;align-items:center;justify-content:center}
+body.frame #app{width:392px;height:810px;max-height:96vh;border:11px solid #111;border-radius:40px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.statusbar{display:none;justify-content:space-between;align-items:center;padding:6px 18px 2px;font-size:12px;font-weight:600;background:var(--pri);color:var(--on-pri);position:relative}
+body.frame .statusbar{display:flex}
+.statusbar:after{content:"";position:absolute;left:50%;top:5px;width:10px;height:10px;border-radius:50%;background:#111;transform:translateX(-50%)}
+header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--pri);color:var(--on-pri)}
+header h1{font-size:18px;margin:0;flex:1;font-weight:600}
+.chip{font-size:11px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.2);white-space:nowrap}
+.hbtn{display:none;background:rgba(255,255,255,.2);border:0;border-radius:99px;width:30px;height:30px;color:inherit;cursor:pointer}
+@media (min-width:700px){.hbtn{display:block}}
+main{flex:1;overflow-y:auto;padding:12px 14px 90px;-webkit-overflow-scrolling:touch}
+h3{margin:18px 0 8px;font-size:14px;color:var(--mut);font-weight:600;letter-spacing:.2px}
+.card{background:var(--surf);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.hero{background:var(--pri);color:var(--on-pri);border-radius:22px;padding:18px;margin-bottom:12px}
+.hero .lbl{opacity:.85;font-size:13px}.hero .big{font-size:34px;font-weight:700;margin:2px 0 10px}
+.hero .row{display:flex;gap:10px}.hero .row>div{flex:1;background:rgba(255,255,255,.14);border-radius:14px;padding:8px 10px}
+.hero small{display:block;opacity:.85;font-size:11px}.hero b{font-size:16px}
+.hero .pos,.hero .neg{color:inherit}
+.row2{display:flex;gap:10px}.row2>*{flex:1}
+.stat small{color:var(--mut);display:block;font-size:12px}.stat b{font-size:20px}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.txn{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.txn:last-child{border:0}
+.ico{width:38px;height:38px;border-radius:50%;background:var(--pri-c);color:var(--on-pri-c);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.txn .mid{flex:1;min-width:0}.txn .t{font-weight:600}.txn .s{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amt{font-weight:700;white-space:nowrap}
+.x{background:none;border:0;color:var(--mut);cursor:pointer;font-size:18px;padding:4px 8px}
+nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--surf2);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);cursor:pointer;padding:2px 0}
+nav button span{font-size:19px;padding:2px 16px;border-radius:99px;line-height:1.2}
+nav button.on{color:var(--ink);font-weight:600}
+nav button.on span{background:var(--pri-c)}
+.fab{position:absolute;right:16px;bottom:80px;background:var(--pri);color:var(--on-pri);border:0;border-radius:18px;height:54px;padding:0 18px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;z-index:5}
+.btn{background:var(--pri);color:var(--on-pri);border:0;border-radius:99px;padding:10px 18px;font-weight:600;cursor:pointer}
+.btn.tonal{background:var(--pri-c);color:var(--on-pri-c)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn.danger{background:var(--neg);color:#fff}
+.btn:disabled{opacity:.5}
+.seg{display:flex;background:var(--surf2);border-radius:99px;padding:3px;margin:0 0 12px}
+.seg button{flex:1;border:0;background:none;padding:8px 6px;border-radius:99px;cursor:pointer;font-size:13px;color:var(--mut)}
+.seg button.on{background:var(--pri);color:var(--on-pri);font-weight:600}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 0}
+input,select,textarea{width:100%;margin-top:4px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surf);font-size:15px}
+textarea{min-height:84px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.pill{border:1px solid var(--line);background:var(--surf);border-radius:99px;padding:7px 13px;font-size:13px;cursor:pointer}
+.pill:active{background:var(--pri-c)}
+.pill.on{background:var(--pri-c);border-color:var(--pri)}
+#sheet{display:none;position:absolute;inset:0;z-index:20}
+#sheet.on{display:block}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:6px 16px 22px}
+.panel:before{content:"";display:block;width:36px;height:4px;border-radius:9px;background:var(--line);margin:6px auto 4px}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.bar{height:10px;background:var(--surf2);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:9px;background:var(--pri)}
+.bar.over i{background:var(--neg)}
+.brow{display:flex;justify-content:space-between;font-size:13px;margin:10px 0 4px}
+.empty{text-align:center;color:var(--mut);padding:22px 8px}
+.item{display:grid;grid-template-columns:1fr 62px 70px 70px 24px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.item input{margin:0;padding:7px 6px;text-align:right}
+.item .nm{font-weight:600}
+.item .am{text-align:right;font-weight:700}
+.colh{display:grid;grid-template-columns:1fr 62px 70px 70px 24px;gap:6px;font-size:11px;color:var(--mut);text-align:right}
+.colh span:first-child{text-align:left}
+.total{display:flex;justify-content:space-between;font-size:20px;font-weight:700;padding:12px 0 4px}
+.toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;z-index:30;max-width:90%;text-align:center}
+.note{font-size:12px;color:var(--mut)}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surf2);color:var(--mut)}
+pre{background:var(--surf2);padding:10px;border-radius:12px;overflow:auto;font-size:12px;white-space:pre-wrap}
+ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="statusbar"><span id="clock">9:41</span><span>5G ▂▄▆█ 🔋 87%</span></div>
+  <header>
+    <h1>My Expense Manager</h1>
+    <span class="chip" id="syncchip">Local only</span>
+    <button class="hbtn" data-act="toggleFrame" title="Phone frame / fullscreen">⛶</button>
+  </header>
+  <main id="view"></main>
+  <button class="fab" data-act="addTxn">＋ Add</button>
+  <nav id="nav"></nav>
+  <div id="sheet"></div>
+</div>
+
+<script>
+"use strict";
+/* ---------- constants ---------- */
+const KEY = "hisab_v1";
+const EXP_CATS = ["Sabji Mandi","Kirana / Grocery","Food & Dining","Transport","Bills & Recharge","Rent","Shopping","Health","Education","Entertainment","Udhar Chukaya","Other"];
+const INC_CATS = ["Salary","Business","Rokad Received","Udhar Recovered","Refund","Other"];
+const METHODS = ["PhonePe","Google Pay","Paytm UPI","BHIM UPI","CRED","Amazon Pay","Cash (Rokad)","Bank Transfer (IMPS/NEFT)","Card"];
+const UTR_METHODS = METHODS.filter(m => !/^Cash|^Card/.test(m));
+const MANDI = [["Aloo",30],["Pyaaz",35],["Tamatar",40],["Palak",25],["Bhindi",60],["Gobhi",40],["Matar",80],["Adrak-Mirchi",100],["Dhaniya",40],["Paneer",360],["Nimbu",80]];
+const STAPLES = ["Atta","Rice","Dal","Milk","Cooking Oil","Masalas","Sugar & Tea"];
+const COLORS = ["--c1","--c2","--c3","--c4","--c5","--c6","--c7","--c8"];
+const TABS = [["home","🏠","Home"],["bazaar","🛒","Bazaar"],["khata","📒","Khata"],["reports","📊","Reports"],["ai","✨","Hisab AI"],["more","⚙️","More"]];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const INR = n => (n < 0 ? "-" : "") + "₹" + Math.abs(Number(n) || 0).toLocaleString("en-IN", {maximumFractionDigits: 2});
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const today = () => ymd(new Date());
+const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return ymd(d); };
+const opts = (list, sel) => list.map(o => `<option${o === sel ? " selected" : ""}>${esc(o)}</option>`).join("");
+const sum = a => a.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+const fmtDate = s => { const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; };
+
+/* ---------- state ---------- */
+function fresh() {
+  return {txns: [], khata: [], lastSync: null,
+    settings: {cloudUrl: "", geminiKey: "", geminiModel: "gemini-2.5-flash", kiranaBudget: 8000}};
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.txns)) { const f = fresh(); return {...f, ...d, settings: {...f.settings, ...(d.settings || {})}}; }
+  } catch (e) {}
+  return fresh();
+}
+let S = load();
+let tab = "home", bazaarSub = "mandi", period = "month", syncState = "local", syncTimer = null;
+let trip = [], tripMethod = "PhonePe", aiOut = "";
+
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function save() { persist(); render(); queueSync(); }
+
+/* ---------- cloud sync (optional endpoint) ---------- */
+function chip() {
+  const el = $("#syncchip");
+  el.textContent = {local: "Local only", syncing: "Syncing…", synced: "Synced to Cloud", failed: "Sync failed"}[syncState];
+}
+function payload() { return {updatedAt: Date.now(), data: {txns: S.txns, khata: S.khata, kiranaBudget: S.settings.kiranaBudget}}; }
+function queueSync() {
+  if (!S.settings.cloudUrl) { syncState = "local"; chip(); return; }
+  syncState = "syncing"; chip();
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(pushSync, 1200);
+}
+async function pushSync() {
+  try {
+    const r = await fetch(S.settings.cloudUrl, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload())});
+    if (!r.ok) throw new Error(r.status);
+    syncState = "synced"; S.lastSync = Date.now(); persist();
+  } catch (e) { syncState = "failed"; }
+  chip();
+}
+function mergeById(a, b) { const m = new Map(a.map(x => [x.id, x])); b.forEach(x => { if (!m.has(x.id)) m.set(x.id, x); }); return [...m.values()]; }
+async function pullSync() {
+  if (!S.settings.cloudUrl) return toast("Add a cloud URL in More first");
+  try {
+    syncState = "syncing"; chip();
+    const r = await fetch(S.settings.cloudUrl);
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json(); const d = j.data || j;
+    S.txns = mergeById(S.txns, d.txns || []); S.khata = mergeById(S.khata, d.khata || []);
+    persist(); await pushSync(); render(); toast("Restored and merged from cloud");
+  } catch (e) { syncState = "failed"; chip(); toast("Could not reach the cloud URL"); }
+}
+
+/* ---------- data helpers ---------- */
+const cmp = (a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id);
+function inPeriod(t, p) {
+  if (p === "all") return true;
+  if (p === "7d") return t.date >= daysAgo(6);
+  return t.date.slice(0, 7) === today().slice(0, 7);
+}
+const filt = p => S.txns.filter(t => inPeriod(t, p));
+function totals(list) {
+  const inc = sum(list.filter(t => t.type === "income")), exp = sum(list.filter(t => t.type === "expense"));
+  return {inc, exp, net: inc - exp};
+}
+function addTxn(o) {
+  const t = {id: uid(), type: o.type || "expense", amount: Number(o.amount), category: o.category || "Other",
+    method: o.method || "Cash (Rokad)", utr: (o.utr || "").trim(), note: (o.note || "").trim(), date: o.date || today()};
+  S.txns.push(t); return t;
+}
+function groupSum(list, key) {
+  const m = {}; list.forEach(t => { m[t[key]] = (m[t[key]] || 0) + t.amount; });
+  return Object.entries(m).sort((a, b) => b[1] - a[1]);
+}
+
+/* ---------- UI plumbing ---------- */
+function toast(msg) {
+  const old = $(".toast"); if (old) old.remove();
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  $("#app").appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function sheet(html) { $("#sheet").innerHTML = `<div class="scrim" data-act="closeSheet"></div><div class="panel">${html}</div>`; $("#sheet").classList.add("on"); }
+function closeSheet() { $("#sheet").classList.remove("on"); $("#sheet").innerHTML = ""; }
+const v = id => { const e = document.getElementById(id); return e ? e.value : ""; };
+
+function saveFile(name, mime, content) {
+  const blob = new Blob([content], {type: mime});
+  const file = new File([blob], name, {type: mime});
+  if (navigator.canShare && navigator.canShare({files: [file]}) && /Android|iPhone/i.test(navigator.userAgent)) {
+    navigator.share({files: [file], title: name}).catch(() => {});
+    return;
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ---------- views ---------- */
+function txnRow(t, del = true) {
+  const sign = t.type === "income" ? "+" : "−";
+  const sub = [t.note, t.method, fmtDate(t.date), t.utr ? "UTR " + t.utr : ""].filter(Boolean).join(" · ");
+  return `<div class="txn"><div class="ico">${esc(t.category[0])}</div>
+    <div class="mid"><div class="t">${esc(t.category)}</div><div class="s">${esc(sub)}</div></div>
+    <div class="amt ${t.type === "income" ? "pos" : "neg"}">${sign}${INR(t.amount)}</div>
+    ${del ? `<button class="x" data-act="delTxn" data-id="${t.id}" aria-label="Delete">✕</button>` : ""}</div>`;
+}
+function khataTotals() {
+  const open = S.khata.filter(k => !k.settled);
+  return {recv: sum(open.filter(k => k.kind === "receive")), pay: sum(open.filter(k => k.kind === "pay"))};
+}
+
+function viewHome() {
+  const t = totals(filt("month")), k = khataTotals();
+  const recent = S.txns.slice().sort(cmp).slice(0, 30);
+  return `<section class="hero"><div class="lbl">This month · Is mahine ka hisab</div>
+    <div class="big">${INR(t.net)}</div>
+    <div class="row"><div><small>Income (Aay)</small><b>${INR(t.inc)}</b></div><div><small>Expense (Kharcha)</small><b>${INR(t.exp)}</b></div></div></section>
+    <div class="row2"><div class="card stat"><small>You'll receive · Lena hai</small><b class="pos">${INR(k.recv)}</b></div>
+    <div class="card stat"><small>You'll pay · Dena hai</small><b class="neg">${INR(k.pay)}</b></div></div>
+    <h3>Recent transactions</h3>
+    <div class="card">${recent.length ? recent.map(t => txnRow(t)).join("") : `<div class="empty">No entries yet.<br>Tap <b>＋ Add</b> or try the Sabji Mandi calculator.</div>`}</div>`;
+}
+
+function viewBazaar() {
+  const seg = `<div class="seg"><button class="${bazaarSub === "mandi" ? "on" : ""}" data-act="bsub" data-v="mandi">Sabji Mandi (सब्जी मंडी)</button><button class="${bazaarSub === "kirana" ? "on" : ""}" data-act="bsub" data-v="kirana">Kirana (किराना)</button></div>`;
+  return seg + (bazaarSub === "mandi" ? mandiHTML() : kiranaHTML());
+}
+function mandiHTML() {
+  const rows = trip.map((it, i) => `<div class="item" data-i="${i}"><div class="nm">${esc(it.name)}</div>
+    <input type="number" inputmode="decimal" step="0.25" min="0" value="${it.qty}" data-in="tripq" data-i="${i}">
+    <input type="number" inputmode="decimal" step="1" min="0" value="${it.rate}" data-in="tripr" data-i="${i}">
+    <div class="am" id="am${i}">${INR(it.qty * it.rate)}</div>
+    <button class="x" data-act="tripdel" data-i="${i}">✕</button></div>`).join("");
+  const recent = S.txns.filter(t => t.category === "Sabji Mandi").sort(cmp).slice(0, 5);
+  return `<div class="card"><div class="note" style="margin-bottom:8px">Tap a vegetable to add it. Rates are starting estimates — edit them to today's mandi rate.</div>
+    <div class="chips">${MANDI.map(([n, r]) => `<button class="pill" data-act="tripadd" data-n="${esc(n)}" data-r="${r}">${esc(n)}</button>`).join("")}
+    <button class="pill" data-act="tripcustom">＋ Other</button></div></div>
+    <div class="card"><b>Trip items</b>
+    ${trip.length ? `<div class="colh"><span>Item</span><span>Qty</span><span>₹/unit</span><span>Amount</span><span></span></div>${rows}
+      <div class="total"><span>Grand total</span><span id="tripTotal">${INR(trip.reduce((s, x) => s + x.qty * x.rate, 0))}</span></div>
+      <label>Paid with<select data-in="tripm">${opts(METHODS, tripMethod)}</select></label>
+      <div class="actions"><button class="btn tonal" data-act="tripclear">Clear</button><button class="btn" data-act="tripsave">Save as expense</button></div>`
+      : `<div class="empty">No items yet — tap a vegetable above.</div>`}</div>
+    <h3>Recent mandi trips</h3><div class="card">${recent.length ? recent.map(t => txnRow(t)).join("") : `<div class="empty">No saved trips.</div>`}</div>`;
+}
+function kiranaHTML() {
+  const month = filt("month").filter(t => t.type === "expense" && t.category === "Kirana / Grocery");
+  const spent = sum(month), bud = Number(S.settings.kiranaBudget) || 0, pct = bud ? Math.min(100, spent / bud * 100) : 0;
+  const stapleRows = STAPLES.map(s => [s, sum(month.filter(t => t.note.toLowerCase().startsWith(s.toLowerCase())))]).filter(x => x[1] > 0);
+  return `<div class="card"><div class="brow"><b>Monthly kitchen budget</b><span>${INR(spent)} / ${INR(bud)}</span></div>
+    <div class="bar ${spent > bud ? "over" : ""}"><i style="width:${pct}%"></i></div>
+    <div class="note" style="margin-top:6px">${bud ? (spent > bud ? `Over budget by ${INR(spent - bud)}` : `${INR(bud - spent)} left this month`) : "Set a budget"}</div>
+    <div class="actions"><button class="btn tonal sm" data-act="setbudget">Change budget</button></div></div>
+    <div class="card"><b>Add staples</b><div class="note" style="margin:4px 0 8px">Tap an item, enter what you paid.</div>
+    <div class="chips">${STAPLES.map(s => `<button class="pill" data-act="staple" data-n="${esc(s)}">${esc(s)}</button>`).join("")}
+    <button class="pill" data-act="staple" data-n="">＋ Other</button></div></div>
+    ${stapleRows.length ? `<h3>Staples this month</h3><div class="card">${stapleRows.map(([n, a]) => `<div class="brow"><span>${esc(n)}</span><b>${INR(a)}</b></div>`).join("")}</div>` : ""}
+    <h3>Kirana entries (this month)</h3><div class="card">${month.length ? month.sort(cmp).map(t => txnRow(t)).join("") : `<div class="empty">Nothing yet.</div>`}</div>`;
+}
+
+function viewKhata() {
+  const open = S.khata.filter(k => !k.settled), done = S.khata.filter(k => k.settled).slice(-5).reverse(), k = khataTotals();
+  const row = e => `<div class="txn"><div class="ico">${esc(e.person[0] || "?")}</div>
+    <div class="mid"><div class="t">${esc(e.person)}</div><div class="s">${esc([e.note, fmtDate(e.date), e.phone].filter(Boolean).join(" · "))}</div></div>
+    <div class="amt ${e.kind === "receive" ? "pos" : "neg"}">${INR(e.amount)}</div></div>
+    <div class="actions" style="margin:0 0 8px">
+      ${e.kind === "receive" ? `<button class="btn tonal sm" data-act="remind" data-id="${e.id}">Remind</button>` : ""}
+      <button class="btn sm" data-act="settle" data-id="${e.id}">Settle</button>
+      <button class="btn tonal sm" data-act="delKhata" data-id="${e.id}">Delete</button></div>`;
+  const list = kind => { const l = open.filter(e => e.kind === kind); return l.length ? l.map(row).join("") : `<div class="empty">Nothing pending.</div>`; };
+  return `<div class="row2"><div class="card stat"><small>You'll receive · उधार दिया</small><b class="pos">${INR(k.recv)}</b></div>
+    <div class="card stat"><small>You'll pay · उधार लिया</small><b class="neg">${INR(k.pay)}</b></div></div>
+    <button class="btn" style="width:100%" data-act="addKhata">＋ New udhar entry</button>
+    <h3>You'll receive (Lena hai)</h3><div class="card">${list("receive")}</div>
+    <h3>You'll pay (Dena hai)</h3><div class="card">${list("pay")}</div>
+    ${done.length ? `<h3>Recently settled</h3><div class="card">${done.map(e => `<div class="txn"><div class="ico">✓</div><div class="mid"><div class="t">${esc(e.person)}</div><div class="s">${e.kind === "receive" ? "Received" : "Paid"} via ${esc(e.settledVia || "")}</div></div><div class="amt">${INR(e.amount)}</div></div>`).join("")}</div>` : ""}`;
+}
+
+function viewReports() {
+  const list = filt(period), t = totals(list), exp = list.filter(x => x.type === "expense");
+  const cats = groupSum(exp, "category"), meth = groupSum(exp, "method");
+  const bars = (arr, tot) => arr.length ? arr.map(([n, a], i) => `<div class="brow"><span>${esc(n)}</span><span>${INR(a)} · ${tot ? Math.round(a / tot * 100) : 0}%</span></div>
+    <div class="bar"><i style="width:${tot ? a / tot * 100 : 0}%;background:var(${COLORS[i % COLORS.length]})"></i></div>`).join("") : `<div class="empty">No expenses in this period.</div>`;
+  const upi = sum(exp.filter(x => UTR_METHODS.includes(x.method) && !/^Bank/.test(x.method))), cash = sum(exp.filter(x => /^Cash/.test(x.method))),
+    bank = sum(exp.filter(x => /^Bank/.test(x.method))), card = sum(exp.filter(x => x.method === "Card"));
+  const seg = [["7d", "7 Days"], ["month", "This Month"], ["all", "All Time"]].map(([k, l]) => `<button class="${period === k ? "on" : ""}" data-act="period" data-v="${k}">${l}</button>`).join("");
+  return `<div class="seg">${seg}</div>
+    <div class="row2"><div class="card stat"><small>Income</small><b class="pos">${INR(t.inc)}</b></div><div class="card stat"><small>Expense</small><b class="neg">${INR(t.exp)}</b></div></div>
+    <div class="card stat"><small>Net (Bachat)</small><b class="${t.net >= 0 ? "pos" : "neg"}">${INR(t.net)}</b></div>
+    <h3>Spending by category</h3><div class="card">${bars(cats, t.exp)}</div>
+    <h3>Payment method share</h3><div class="card">${bars([["UPI apps", upi], ["Cash (Rokad)", cash], ["Bank transfer", bank], ["Card", card]].filter(x => x[1] > 0), t.exp)}
+    <div class="note" style="margin-top:8px">By app: ${meth.map(([n, a]) => esc(n) + " " + INR(a)).join(" · ") || "—"}</div></div>
+    <h3>Export</h3><div class="card"><div class="actions" style="justify-content:flex-start;margin:0">
+    <button class="btn tonal" data-act="csv">Export CSV</button><button class="btn tonal" data-act="statement">Printable statement</button></div></div>`;
+}
+
+function viewAI() {
+  const hasKey = !!S.settings.geminiKey;
+  return `<div class="card"><b>Hisab AI (हिसाब AI)</b>
+    <div class="note" style="margin:4px 0 8px">${hasKey ? "Using Gemini model " + esc(S.settings.geminiModel) : "No Gemini key set — using the built-in offline parser. Add a key in More for smarter parsing."}</div>
+    <textarea id="aiq" placeholder='e.g. "Bought 280 rs vegetables in sabji mandi with PhonePe" or "Paid 1200 groceries via GPay"'></textarea>
+    <div class="actions"><button class="btn" data-act="aiparse">Parse expense</button></div></div>
+    <div id="aicards"></div>
+    <div class="card"><b>Smart spending audit</b><div class="note" style="margin:4px 0 8px">Looks at your last 30 days and suggests practical savings.</div>
+    <div class="actions" style="margin:0 0 8px"><button class="btn tonal" data-act="audit">Run audit</button></div><div id="auditout">${aiOut}</div></div>`;
+}
+
+function viewMore() {
+  const s = S.settings;
+  return `<div class="card"><b>Cloud sync</b>
+    <div class="note" style="margin:4px 0">Data always saves on this phone. To also sync to the cloud, paste the URL of your own sync endpoint (it receives a JSON POST and returns the same JSON on GET).</div>
+    <label>Sync endpoint URL<input id="s_cloud" type="url" placeholder="https://your-server.example/api/cloud/sync" value="${esc(s.cloudUrl)}"></label>
+    <div class="actions"><button class="btn tonal sm" data-act="pull">Restore from cloud</button><button class="btn sm" data-act="savecloud">Save &amp; sync now</button></div>
+    <div class="note">Status: ${{local: "Local only", syncing: "Syncing…", synced: "Synced to Cloud", failed: "Sync failed"}[syncState]}${S.lastSync ? " · last " + new Date(S.lastSync).toLocaleString("en-IN") : ""}</div></div>
+  <div class="card"><b>Gemini AI</b>
+    <div class="note" style="margin:4px 0">Your key is stored only on this phone and sent only to Google. Anyone with access to this phone's app data could read it.</div>
+    <label>Gemini API key<input id="s_key" type="password" autocomplete="off" value="${esc(s.geminiKey)}"></label>
+    <label>Model name<input id="s_model" value="${esc(s.geminiModel)}"></label>
+    <div class="actions"><button class="btn sm" data-act="saveai">Save</button></div></div>
+  <div class="card"><b>Backup</b><div class="actions" style="justify-content:flex-start;margin-top:8px">
+    <button class="btn tonal sm" data-act="exportjson">Export backup</button><button class="btn tonal sm" data-act="importjson">Import backup</button></div>
+    <input type="file" id="impfile" accept="application/json" style="display:none"></div>
+  <div class="card"><b>Install on your phone</b><ol>
+    <li>Open this app in Chrome on Android.</li><li>Menu ⋮ → <b>Add to Home screen</b> / <b>Install app</b>.</li>
+    <li>It then opens full-screen and works offline.</li></ol>
+    <div class="note">For a real .apk, use the Android project + GitHub Actions workflow shipped with this app (see its README).</div></div>
+  <div class="card"><b>Danger zone</b><div class="actions" style="justify-content:flex-start;margin-top:8px"><button class="btn danger sm" data-act="wipe">Erase all data</button></div></div>`;
+}
+
+const VIEWS = {home: viewHome, bazaar: viewBazaar, khata: viewKhata, reports: viewReports, ai: viewAI, more: viewMore};
+function render() {
+  const main = $("#view"), top = main.scrollTop;
+  main.innerHTML = VIEWS[tab]();
+  main.scrollTop = top;
+  $("#nav").innerHTML = TABS.map(([k, i, l]) => `<button class="${tab === k ? "on" : ""}" data-act="tab" data-v="${k}"><span>${i}</span>${l}</button>`).join("");
+  document.querySelector(".fab").style.display = (tab === "home" || tab === "bazaar" || tab === "reports") ? "" : "none";
+  chip();
+}
+
+/* ---------- forms ---------- */
+function readTxnForm() {
+  const on = document.querySelector("#tt .on");
+  return {type: on ? on.dataset.v : "expense", amount: v("f_amt"), category: v("f_cat"), method: v("f_met"), utr: v("f_utr"), note: v("f_note"), date: v("f_date")};
+}
+function txnForm(pre = {}) {
+  const t = pre.type || "expense";
+  sheet(`<h3 style="margin-top:6px">Add transaction</h3>
+    <div class="seg" id="tt"><button class="${t === "expense" ? "on" : ""}" data-act="ttype" data-v="expense">Expense (Kharcha)</button><button class="${t === "income" ? "on" : ""}" data-act="ttype" data-v="income">Income (Aay)</button></div>
+    <label>Amount (₹)<input id="f_amt" type="number" inputmode="decimal" min="0" step="0.01" value="${esc(pre.amount || "")}"></label>
+    <label>Category<select id="f_cat">${opts(t === "income" ? INC_CATS : EXP_CATS, pre.category)}</select></label>
+    <label>Payment method<select id="f_met" data-in="metchg">${opts(METHODS, pre.method || "PhonePe")}</select></label>
+    <label id="utrw">UPI UTR / reference ID (optional)<input id="f_utr" maxlength="30" value="${esc(pre.utr || "")}"></label>
+    <label>Note<input id="f_note" value="${esc(pre.note || "")}" placeholder="e.g. Doodh, auto fare"></label>
+    <label>Date<input id="f_date" type="date" value="${esc(pre.date || today())}"></label>
+    <div class="actions"><button class="btn tonal" data-act="closeSheet">Cancel</button><button class="btn" data-act="saveTxn">Save</button></div>`);
+  toggleUtr();
+}
+function toggleUtr() { const w = document.getElementById("utrw"); if (w) w.style.display = UTR_METHODS.includes(v("f_met")) ? "" : "none"; }
+
+function ask(title, fields, okLabel, onOk) {
+  window.__ask = onOk;
+  sheet(`<h3 style="margin-top:6px">${esc(title)}</h3>${fields}<div class="actions"><button class="btn tonal" data-act="closeSheet">Cancel</button><button class="btn" data-act="askok">${esc(okLabel)}</button></div>`);
+}
+
+/* ---------- AI ---------- */
+const CAT_RULES = [
+  [/sabji|sabzi|vegetable|veggie|mandi|tamatar|aloo|pyaaz/i, "Sabji Mandi"],
+  [/grocery|groceries|kirana|atta|\bdal\b|rice|chawal|milk|doodh|oil|masala|sugar|chai/i, "Kirana / Grocery"],
+  [/petrol|diesel|auto|uber|ola|rapido|bus|metro|train|cab|fuel/i, "Transport"],
+  [/recharge|bill|electricity|bijli|wifi|broadband|gas|water|mobile/i, "Bills & Recharge"],
+  [/rent|kiraya/i, "Rent"], [/medicine|doctor|hospital|dawai|clinic|pharmacy/i, "Health"],
+  [/school|fees|tuition|book|course/i, "Education"], [/movie|netflix|game|party|trip/i, "Entertainment"],
+  [/lunch|dinner|breakfast|zomato|swiggy|restaurant|chai|snack|pizza|food/i, "Food & Dining"],
+  [/shirt|shoes|amazon|flipkart|clothes|shopping|myntra/i, "Shopping"]
+];
+const METHOD_RULES = [[/phone\s?pe|phonepe/i, "PhonePe"], [/g\s?pay|google\s?pay/i, "Google Pay"], [/paytm/i, "Paytm UPI"], [/bhim/i, "BHIM UPI"], [/\bcred\b/i, "CRED"],
+  [/amazon\s?pay/i, "Amazon Pay"], [/cash|rokad|naqad/i, "Cash (Rokad)"], [/neft|imps|bank|transfer/i, "Bank Transfer (IMPS/NEFT)"], [/card|credit|debit/i, "Card"], [/upi/i, "BHIM UPI"]];
+function localParse(text) {
+  const clean = text.replace(/,/g, "");
+  let m = clean.match(/(?:₹|rs\.?|inr|rupees?)\s*(\d+(?:\.\d+)?)/i) || clean.match(/(\d+(?:\.\d+)?)\s*(?:₹|rs\.?|inr|rupees?)/i) || clean.match(/(\d+(?:\.\d+)?)/);
+  if (!m) return [];
+  const income = /received|salary|credited|income|earned|got paid|refund|mila|aaya/i.test(text);
+  const cat = income ? (/salary/i.test(text) ? "Salary" : /refund/i.test(text) ? "Refund" : "Rokad Received") : ((CAT_RULES.find(r => r[0].test(text)) || [])[1] || "Other");
+  const met = (METHOD_RULES.find(r => r[0].test(text)) || [])[1] || "Cash (Rokad)";
+  return [{type: income ? "income" : "expense", amount: Number(m[1]), category: cat, method: met, note: text.trim().slice(0, 80)}];
+}
+async function geminiJSON(prompt) {
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(S.settings.geminiModel)}:generateContent`, {
+    method: "POST", headers: {"Content-Type": "application/json", "x-goog-api-key": S.settings.geminiKey},
+    body: JSON.stringify({contents: [{parts: [{text: prompt}]}], generationConfig: {responseMimeType: "application/json", temperature: 0.1}})});
+  if (!r.ok) throw new Error("Gemini error " + r.status);
+  const j = await r.json();
+  return JSON.parse(j.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+}
+function aiCards(entries) {
+  window.__entries = entries;
+  $("#aicards").innerHTML = entries.length ? entries.map((e, i) => `<div class="card"><span class="tag">${e.type === "income" ? "Income" : "Expense"}</span>
+    <div style="font-size:22px;font-weight:700;margin:6px 0" class="${e.type === "income" ? "pos" : "neg"}">${INR(e.amount)}</div>
+    <div>${esc(e.category)} · ${esc(e.method)}</div><div class="note">${esc(e.note || "")}</div>
+    <div class="actions"><button class="btn tonal sm" data-act="aiedit" data-i="${i}">Edit</button><button class="btn sm" data-act="aiadd" data-i="${i}">Add to ledger</button></div></div>`).join("")
+    : `<div class="card empty">Couldn't find an amount. Try "paid 450 rs for milk via GPay".</div>`;
+}
+function auditSummary() {
+  const list = filt("month"), exp = list.filter(t => t.type === "expense"), t = totals(list), k = khataTotals();
+  return {t, k, cats: groupSum(exp, "category"), meth: groupSum(exp, "method"), kBud: Number(S.settings.kiranaBudget) || 0,
+    kSpent: sum(exp.filter(x => x.category === "Kirana / Grocery")), mandi: sum(exp.filter(x => x.category === "Sabji Mandi")), count: exp.length};
+}
+function localAudit() {
+  const a = auditSummary(), tips = [];
+  if (!a.count) return ["Add a few expenses this month and I will have something to audit."];
+  const [top, topAmt] = a.cats[0];
+  tips.push(`Your biggest spend this month is ${top} at ${INR(topAmt)} (${Math.round(topAmt / a.t.exp * 100)}% of expenses).`);
+  if (a.kBud && a.kSpent > a.kBud) tips.push(`Kirana is ${INR(a.kSpent - a.kBud)} over your ${INR(a.kBud)} budget. Try a monthly list and buying staples in bulk.`);
+  if (a.mandi > 0) tips.push(`Sabji Mandi spend is ${INR(a.mandi)}. Buying for 3–4 days at once, and seasonal vegetables, usually trims this.`);
+  if (a.t.inc > 0) { const r = a.t.net / a.t.inc; tips.push(r < 0.2 ? `You are saving ${Math.round(Math.max(r, 0) * 100)}% of income. Aim for at least 20% by moving savings first, then spending.` : `You are saving ${Math.round(r * 100)}% of income — good. Consider moving the surplus into a recurring deposit or SIP.`); }
+  if (a.k.recv > 0) tips.push(`${INR(a.k.recv)} is still to be received in Khata — following up improves your cash flow.`);
+  if (a.k.pay > 0) tips.push(`${INR(a.k.pay)} is still to be paid in Khata — clear it on time to avoid strain on relationships.`);
+  return tips;
+}
+function tipsHTML(tips) { return `<ul>${tips.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`; }
+
+/* ---------- export ---------- */
+function csv() {
+  const q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const rows = [["Date", "Type", "Category", "Amount (INR)", "Payment method", "UTR", "Note"]]
+    .concat(filt(period).sort(cmp).map(t => [t.date, t.type, t.category, t.amount, t.method, t.utr, t.note]));
+  saveFile(`expenses-${today()}.csv`, "text/csv", "﻿" + rows.map(r => r.map(q).join(",")).join("\r\n"));
+}
+function statementHTML() {
+  const list = filt(period).sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)), t = totals(list);
+  return `<!doctype html><meta charset="utf-8"><title>Statement</title><style>body{font:13px system-ui;margin:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:5px 8px;text-align:left}td.r,th.r{text-align:right}h1{font-size:18px}</style>
+  <h1>Expense statement — ${{"7d": "Last 7 days", month: "This month", all: "All time"}[period]}</h1><p>Generated ${new Date().toLocaleString("en-IN")}</p>
+  <table><tr><th>Date</th><th>Category</th><th>Method</th><th>Note / UTR</th><th class="r">Credit (₹)</th><th class="r">Debit (₹)</th></tr>
+  ${list.map(x => `<tr><td>${fmtDate(x.date)}</td><td>${esc(x.category)}</td><td>${esc(x.method)}</td><td>${esc(x.note)}${x.utr ? " / " + esc(x.utr) : ""}</td><td class="r">${x.type === "income" ? INR(x.amount) : ""}</td><td class="r">${x.type === "expense" ? INR(x.amount) : ""}</td></tr>`).join("")}
+  <tr><th colspan="4">Total</th><th class="r">${INR(t.inc)}</th><th class="r">${INR(t.exp)}</th></tr><tr><th colspan="4">Net balance</th><th class="r" colspan="2">${INR(t.net)}</th></tr></table>`;
+}
+
+/* ---------- actions ---------- */
+const A = {
+  tab: d => { tab = d.v; render(); $("#view").scrollTop = 0; },
+  bsub: d => { bazaarSub = d.v; render(); },
+  period: d => { period = d.v; render(); },
+  closeSheet,
+  toggleFrame: () => { document.body.classList.toggle("frame"); },
+  addTxn: () => txnForm(),
+  ttype: d => { const p = readTxnForm(); p.type = d.v; p.category = ""; txnForm(p); },
+  saveTxn: () => {
+    const f = readTxnForm(), amt = Number(f.amount);
+    if (!(amt > 0)) return toast("Enter an amount greater than 0");
+    addTxn(f); closeSheet(); save(); toast("Saved");
+  },
+  delTxn: d => { if (confirm("Delete this entry?")) { S.txns = S.txns.filter(t => t.id !== d.id); save(); } },
+  /* mandi */
+  tripadd: d => { const ex = trip.find(x => x.name === d.n); if (ex) ex.qty += 1; else trip.push({name: d.n, qty: 1, rate: Number(d.r)}); render(); },
+  tripcustom: () => ask("Add item", `<label>Item name<input id="a_n"></label><label>Quantity<input id="a_q" type="number" inputmode="decimal" value="1"></label><label>Rate (₹ per unit)<input id="a_r" type="number" inputmode="decimal"></label>`, "Add", () => {
+    const n = v("a_n").trim(), q = Number(v("a_q")), r = Number(v("a_r"));
+    if (!n || !(q > 0) || !(r >= 0)) return toast("Fill name, quantity and rate"), false;
+    trip.push({name: n, qty: q, rate: r}); closeSheet(); render();
+  }),
+  tripdel: d => { trip.splice(Number(d.i), 1); render(); },
+  tripclear: () => { trip = []; render(); },
+  tripsave: () => {
+    const total = trip.reduce((s, x) => s + x.qty * x.rate, 0);
+    if (!(total > 0)) return toast("Total is ₹0");
+    addTxn({type: "expense", amount: Math.round(total * 100) / 100, category: "Sabji Mandi", method: tripMethod, note: trip.map(x => `${x.name} ${x.qty}×${x.rate}`).join(", ")});
+    trip = []; save(); toast("Mandi trip saved");
+  },
+  /* kirana */
+  setbudget: () => ask("Monthly kitchen budget", `<label>Budget (₹)<input id="a_b" type="number" inputmode="decimal" value="${S.settings.kiranaBudget}"></label>`, "Save", () => {
+    const b = Number(v("a_b")); if (!(b >= 0)) return toast("Enter a valid amount"), false;
+    S.settings.kiranaBudget = b; closeSheet(); save();
+  }),
+  staple: d => ask(d.n ? "Add " + d.n : "Add kirana item", `${d.n ? "" : `<label>Item<input id="a_n"></label>`}<label>Amount paid (₹)<input id="a_a" type="number" inputmode="decimal"></label>
+    <label>Paid with<select id="a_m">${opts(METHODS, "PhonePe")}</select></label>`, "Add", () => {
+    const a = Number(v("a_a")), n = d.n || v("a_n").trim();
+    if (!(a > 0) || !n) return toast("Enter item and amount"), false;
+    addTxn({type: "expense", amount: a, category: "Kirana / Grocery", method: v("a_m"), note: n}); closeSheet(); save(); toast("Added");
+  }),
+  /* khata */
+  addKhata: () => ask("New udhar entry", `<div class="seg" id="kk"><button class="on" data-act="kkind" data-v="receive">You'll receive (दिया)</button><button data-act="kkind" data-v="pay">You'll pay (लिया)</button></div>
+    <label>Person's name<input id="k_p"></label><label>Phone (optional)<input id="k_ph" type="tel" inputmode="tel"></label>
+    <label>Amount (₹)<input id="k_a" type="number" inputmode="decimal"></label><label>Note<input id="k_n" placeholder="e.g. Shaadi ke liye"></label>`, "Save", () => {
+    const p = v("k_p").trim(), a = Number(v("k_a")), kind = document.querySelector("#kk .on").dataset.v;
+    if (!p || !(a > 0)) return toast("Enter name and amount"), false;
+    S.khata.push({id: uid(), person: p, phone: v("k_ph").trim(), kind, amount: a, note: v("k_n").trim(), date: today(), settled: false});
+    closeSheet(); save();
+  }),
+  kkind: d => { document.querySelectorAll("#kk button").forEach(b => b.classList.toggle("on", b === document.querySelector(`#kk [data-v="${d.v}"]`))); },
+  delKhata: d => { if (confirm("Delete this entry?")) { S.khata = S.khata.filter(k => k.id !== d.id); save(); } },
+  settle: d => {
+    const e = S.khata.find(k => k.id === d.id); if (!e) return;
+    ask("Settle " + e.person, `<div class="note">${e.kind === "receive" ? "Received" : "Paid"} ${INR(e.amount)}. A matching entry is added to your ledger.</div>
+      <label>Via<select id="a_m">${opts(METHODS, "PhonePe")}</select></label><label>UPI UTR (optional)<input id="a_u" maxlength="30"></label>`, "Settle", () => {
+      e.settled = true; e.settledVia = v("a_m"); e.settledOn = today();
+      addTxn({type: e.kind === "receive" ? "income" : "expense", amount: e.amount, category: e.kind === "receive" ? "Udhar Recovered" : "Udhar Chukaya", method: v("a_m"), utr: v("a_u"), note: "Khata: " + e.person});
+      closeSheet(); save(); toast("Settled and added to ledger");
+    });
+  },
+  remind: d => {
+    const e = S.khata.find(k => k.id === d.id); if (!e) return;
+    const msg = `Namaste ${e.person}, yeh ek chhota sa reminder hai ki aapke ${INR(e.amount)} baaki hain${e.note ? " (" + e.note + ")" : ""}. Jab suvidha ho UPI ya cash se de dein. Dhanyavaad! 🙏`;
+    let ph = (e.phone || "").replace(/\D/g, ""); if (ph.length === 10) ph = "91" + ph;
+    window.__msg = msg;
+    sheet(`<h3 style="margin-top:6px">Reminder</h3><pre>${esc(msg)}</pre><div class="actions" style="flex-wrap:wrap">
+      <button class="btn tonal sm" data-act="copymsg">Copy</button>
+      ${e.phone ? `<a class="btn tonal sm" style="text-decoration:none" href="sms:${esc(e.phone)}?body=${encodeURIComponent(msg)}">SMS</a>` : ""}
+      <a class="btn sm" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${ph}?text=${encodeURIComponent(msg)}">WhatsApp</a></div>`);
+  },
+  copymsg: () => { (navigator.clipboard ? navigator.clipboard.writeText(window.__msg) : Promise.reject()).then(() => toast("Copied"), () => toast("Long-press the text to copy")); },
+  /* reports */
+  csv, statement: () => {
+    const html = statementHTML(), w = window.open("", "_blank");
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 300); } else saveFile("statement.html", "text/html", html);
+  },
+  /* AI */
+  aiparse: async () => {
+    const text = v("aiq").trim(); if (!text) return toast("Type something first");
+    $("#aicards").innerHTML = `<div class="card empty">Reading…</div>`;
+    let entries = [];
+    if (S.settings.geminiKey) {
+      try {
+        const r = await geminiJSON(`You parse Indian household money entries. Return JSON: {"entries":[{"type":"expense"|"income","amount":number,"category":string,"method":string,"note":string}]}.
+category must be one of ${JSON.stringify(EXP_CATS.concat(INC_CATS))}. method must be one of ${JSON.stringify(METHODS)} (use "Cash (Rokad)" if unspecified). Text: ${JSON.stringify(text)}`);
+        entries = (r.entries || []).filter(e => Number(e.amount) > 0).map(e => ({...e, amount: Number(e.amount), type: e.type === "income" ? "income" : "expense",
+          method: METHODS.includes(e.method) ? e.method : "Cash (Rokad)", category: (e.type === "income" ? INC_CATS : EXP_CATS).includes(e.category) ? e.category : "Other"}));
+      } catch (err) { toast("Gemini failed — used offline parser"); entries = localParse(text); }
+    } else entries = localParse(text);
+    aiCards(entries);
+  },
+  aiadd: d => { const e = window.__entries[Number(d.i)]; addTxn(e); save(); toast("Added to ledger"); },
+  aiedit: d => txnForm(window.__entries[Number(d.i)]),
+  audit: async () => {
+    const out = $("#auditout"); out.innerHTML = `<div class="note">Analysing…</div>`;
+    let tips;
+    if (S.settings.geminiKey) {
+      try {
+        const a = auditSummary();
+        const r = await geminiJSON(`You are a practical Indian household budget coach. Based on this month's data (INR) give 4-6 short, specific, actionable tips in simple English. Return JSON {"tips":[string]}. Data: ${JSON.stringify(a)}`);
+        tips = (r.tips || []).map(String);
+      } catch (err) { toast("Gemini failed — used offline audit"); }
+    }
+    aiOut = tipsHTML(tips && tips.length ? tips : localAudit()); out.innerHTML = aiOut;
+  },
+  /* settings */
+  savecloud: () => { S.settings.cloudUrl = v("s_cloud").trim(); persist(); render(); queueSync(); toast(S.settings.cloudUrl ? "Syncing…" : "Cloud sync off"); },
+  pull: pullSync,
+  saveai: () => { S.settings.geminiKey = v("s_key").trim(); S.settings.geminiModel = v("s_model").trim() || "gemini-2.5-flash"; persist(); render(); toast("Saved"); },
+  exportjson: () => saveFile(`expense-backup-${today()}.json`, "application/json", JSON.stringify({txns: S.txns, khata: S.khata, kiranaBudget: S.settings.kiranaBudget}, null, 1)),
+  importjson: () => $("#impfile").click(),
+  wipe: () => { if (confirm("Erase ALL entries on this phone? This cannot be undone.")) { S = fresh(); trip = []; save(); toast("Erased"); } },
+  askok: () => { if (window.__ask && window.__ask() === false) return; }
+};
+const IN = {
+  tripq: el => { trip[el.dataset.i].qty = Number(el.value) || 0; upTrip(el.dataset.i); },
+  tripr: el => { trip[el.dataset.i].rate = Number(el.value) || 0; upTrip(el.dataset.i); },
+  tripm: el => { tripMethod = el.value; },
+  metchg: toggleUtr
+};
+function upTrip(i) {
+  const a = document.getElementById("am" + i), t = document.getElementById("tripTotal");
+  if (a) a.textContent = INR(trip[i].qty * trip[i].rate);
+  if (t) t.textContent = INR(trip.reduce((s, x) => s + x.qty * x.rate, 0));
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const fn = A[b.dataset.act]; if (fn) fn(b.dataset, b, e);
+});
+["input", "change"].forEach(ev => document.addEventListener(ev, e => {
+  const el = e.target.closest("[data-in]"); if (el && IN[el.dataset.in]) IN[el.dataset.in](el);
+  if (e.target.id === "impfile" && ev === "change" && e.target.files[0]) {
+    const r = new FileReader();
+    r.onload = () => { try { const d = JSON.parse(r.result); S.txns = mergeById(S.txns, d.txns || []); S.khata = mergeById(S.khata, d.khata || []); save(); toast("Backup imported"); } catch (x) { toast("Not a valid backup file"); } };
+    r.readAsText(e.target.files[0]);
+  }
+}));
+
+/* ---------- boot ---------- */
+function tickClock() { const d = new Date(); $("#clock").textContent = d.getHours() + ":" + pad(d.getMinutes()); }
+if (window.innerWidth >= 700) document.body.classList.add("frame");
+tickClock(); setInterval(tickClock, 30000);
+render(); queueSync();
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

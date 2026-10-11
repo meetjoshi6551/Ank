@@ -1,0 +1,7 @@
+{
+  "appId": "com.myexpense.manager",
+  "appName": "My Expense Manager",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false }
+}
